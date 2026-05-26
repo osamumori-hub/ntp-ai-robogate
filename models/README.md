@@ -1,18 +1,37 @@
-# Model weights
+# モデルウェイト
 
-Place YOLOv8 `.pt` files here.
+YOLOv8 の `.pt` ファイルをこのディレクトリに配置してください。
 
-## Expected files
+## 想定ファイル
 
-- `robogate_v1.pt` — fine-tuned weights for カミキリムシ / カブトムシ. Primary model. Path is set by `DEFAULT_MODEL_PATH` in [`config.py`](../config.py).
-- `yolov8n.pt` — COCO pretrained fallback. Auto-downloaded by `ultralytics` on first use if missing.
+- `robogate_v1.pt`  
+  カミキリムシ / カブトムシ向けにファインチューニングされたメインモデルです。  
+  パスは [`config.py`](../config.py) 内の `DEFAULT_MODEL_PATH` で設定されています。
 
-## Training (Option A)
+- `yolov8n.pt`  
+  COCO 学習済みのフォールバックモデルです。  
+  ファイルが存在しない場合、初回使用時に `ultralytics` により自動ダウンロードされます。
 
-Fine-tune via Google Colab using the `ultralytics` library on Shimamoto's labeled dataset (50–100 images per class is enough for the demo). Export the resulting `best.pt` and copy it here as `robogate_v1.pt`.
+## 学習方法（Option A）
 
-## Fallback (Option B)
+Google Colab 上で `ultralytics` ライブラリを使用し、  
+Shimamoto のラベル付きデータセットを用いてファインチューニングを行います。
 
-If a fine-tuned model is not ready, download a community insect/beetle YOLOv8 model from Roboflow Universe and drop it in. Class names may be generic — UI label mapping is in `CLASS_LABELS_JP` / `CLASS_LABELS_EN` in [`config.py`](../config.py).
+デモ用途であれば、各クラス 50〜100 枚程度の画像でも十分です。
 
-`.pt` files are gitignored — do not commit weights.
+学習後に生成された `best.pt` をエクスポートし、  
+このディレクトリへ `robogate_v1.pt` として配置してください。
+
+## フォールバック（Option B）
+
+ファインチューニング済みモデルが未完成の場合は、  
+Roboflow Universe 上の昆虫 / カブトムシ向け YOLOv8 コミュニティモデルを利用できます。
+
+クラス名が汎用的な場合がありますが、  
+UI 表示用のラベルマッピングは [`config.py`](../config.py) 内の  
+`CLASS_LABELS_JP` および `CLASS_LABELS_EN` で管理されています。
+
+## 注意事項
+
+`.pt` ファイルは `.gitignore` に含まれています。  
+モデルウェイトを Git にコミットしないでください。

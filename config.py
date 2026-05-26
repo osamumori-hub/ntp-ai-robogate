@@ -39,4 +39,10 @@ DEFAULT_LABEL_JP = "その他"
 DEFAULT_LABEL_SHORT_JP = "その他"
 
 # Japanese-capable font (Google Noto Sans JP, ships with Windows 10/11)
-JAPANESE_FONT_PATH = r"C:\Windows\Fonts\NotoSansJP-VF.ttf"
+JAPANESE_FONT_PATHS = [
+    r"C:\Windows\Fonts\NotoSansJP-VF.ttf",       # Windows, Noto
+    r"C:\Windows\Fonts\msgothic.ttc",              # Windows, MS Gothic (always present)
+    r"C:\Windows\Fonts\meiryo.ttc",                # Windows, Meiryo
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",  # Linux
+    "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",          # macOS
+]

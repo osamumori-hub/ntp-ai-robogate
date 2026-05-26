@@ -11,11 +11,27 @@ import config
 
 
 def _load_font(size: int) -> ImageFont.FreeTypeFont:
-    font_path = Path(config.JAPANESE_FONT_PATH)
-    if font_path.exists():
-        return ImageFont.truetype(str(font_path), size=size)
-    return ImageFont.load_default()
-
+    # Try each configured path
+    for font_path_str in config.JAPANESE_FONT_PATHS:
+        font_path = Path(font_path_str)
+        if font_path.exists():
+            try:
+                return ImageFont.truetype(str(font_path), size=size)
+            except Exception:
+                continue
+    
+    # Last resort: download NotoSansJP at runtime (requires requests + internet)
+    try:
+        import urllib.request, tempfile
+        url = "https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/Japanese/NotoSansCJKjp-Regular.otf"
+        tmp = Path(tempfile.gettempdir()) / "NotoSansCJKjp.otf"
+        if not tmp.exists():
+            urllib.request.urlretrieve(url, tmp)
+        return ImageFont.truetype(str(tmp), size=size)
+    except Exception:
+        pass
+    
+    return ImageFont.load_default()  # garbled, but won't crash
 
 class Detector:
     def __init__(self, model_path: str, conf_threshold: float = 0.5):
