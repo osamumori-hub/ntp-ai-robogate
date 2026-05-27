@@ -1,34 +1,34 @@
-# RoboGate デモ — 害虫検知デモ
+# RoboGate Demo — 害虫検知デモ
 
-NTPのRoboGate異常判定エンジンのVCピッチ用デモです。写真および動画からクビアカツヤカミキリを検知します。
+VC pitch demo for NTP's RoboGate anomaly judgment engine. Detects クビアカツヤカミキリ (red-necked longhorn beetle) in photos and videos.
 
-> これはデモであり、本番コードではありません。
+> This is a demo, not production code.
 
-## セットアップ
+## Setup
 
 ```bash
 python -m venv .venv
-# Windows の場合:  .venv\Scripts\activate
-# macOS / Linux の場合:  source .venv/bin/activate
+# Windows:  .venv\Scripts\activate
+# macOS/Linux:  source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## モデルの重み
+## Model weights
 
-YOLOv8 の `.pt` ファイルを `models/robogate_v1.pt` に配置してください。ファインチューニング済みの重みがまだ用意できていない場合、アプリは `models/yolov8n.pt`（COCO 事前学習済み。初回実行時に ultralytics が自動ダウンロード）にフォールバックします。詳細は [models/README.md](models/README.md) を参照してください。
+Place a YOLOv8 `.pt` file at `models/robogate_v1.pt`. If no fine-tuned weights are available yet, the app falls back to `models/yolov8n.pt` (COCO pretrained, auto-downloaded by ultralytics on first run). See [models/README.md](models/README.md).
 
-## サンプルデータ
+## Sample data
 
-テスト用画像（JPG/PNG）を `assets/images/` に、テスト用動画（MP4/MOV）を `assets/videos/` に配置してください。「サンプル画像で試す」/「サンプル動画で試す」ボタンを押すと、ランダムに1つが選ばれます。
+Drop test images into `assets/images/` (JPG/PNG) and test videos into `assets/videos/` (MP4/MOV). The "サンプル画像で試す" / "サンプル動画で試す" buttons pick one at random.
 
-## 実行方法
+## Run
 
 ```bash
 streamlit run app.py
 ```
 
-## タブ構成
+## Tabs
 
-1. **フォト検知** — 写真をアップロードすると、バウンディングボックスと検知結果テーブルが表示されます。
-2. **ビデオ検知** — 動画をアップロードすると、フレームに注釈が付いた出力に加え、タイムラインと統計情報が得られます。
-3. **ロードマップ** — フェーズ 1〜4 のビジョンスライド。
+1. **フォト検知** — upload a photo, see bounding boxes and a detection table.
+2. **ビデオ検知** — upload a video, get a frame-annotated output plus timeline and stats.
+3. **ロードマップ** — Phase 1–4 vision slide.

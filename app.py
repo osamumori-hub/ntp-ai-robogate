@@ -152,7 +152,9 @@ def run_video_tab(detector: Detector, frame_skip: int) -> None:
         progress = st.progress(0.0, text="解析中...")
 
         def update(p: float) -> None:
-            progress.progress(min(p, 1.0), text=f"解析中... {int(p * 100)}%")
+            pct = int(p * 100)
+            label = "エンコード中..." if p >= 0.95 else f"解析中... {pct}%"
+            progress.progress(min(p, 1.0), text=label)
 
         stats = process_video(
             source_path,
@@ -163,23 +165,22 @@ def run_video_tab(detector: Detector, frame_skip: int) -> None:
         )
         progress.empty()
 
-        st.success("解析完了")
-        st.video(str(output_path))
+        with st.container(border=True):
+            m1, m2, m3 = st.columns(3)
+            m1.metric("解析フレーム数", stats["frames_analyzed"])
+            m2.metric("検知数合計", stats["total_detections"])
+            m3.metric("平均信頼度", f"{stats['average_confidence']:.3f}")
+            st.video(str(output_path))
 
-        c1, c2, c3 = st.columns(3)
-        c1.metric("解析フレーム数", stats["frames_analyzed"])
-        c2.metric("検知数合計", stats["total_detections"])
-        c3.metric("平均信頼度", f"{stats['average_confidence']:.3f}")
-
-        st.markdown("### タイムライン (秒ごとの検知数)")
-        if stats["per_second_counts"]:
-            df = pd.DataFrame(
-                sorted(stats["per_second_counts"].items()),
-                columns=["秒", "検知数"],
-            ).set_index("秒")
-            st.bar_chart(df)
-        else:
-            st.info("検知対象は見つかりませんでした。")
+        with st.expander("タイムライン (秒ごとの検知数)", expanded=False):
+            if stats["per_second_counts"]:
+                df = pd.DataFrame(
+                    sorted(stats["per_second_counts"].items()),
+                    columns=["秒", "検知数"],
+                ).set_index("秒")
+                st.bar_chart(df)
+            else:
+                st.info("検知対象は見つかりませんでした。")
 
 
 def run_roadmap_tab() -> None:

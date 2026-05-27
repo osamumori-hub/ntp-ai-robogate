@@ -1,11 +1,28 @@
 from __future__ import annotations
 
+import os
+import subprocess
+import tempfile
 from pathlib import Path
 from typing import Callable, Optional, Union
 
 import cv2
+import imageio_ffmpeg
 
 from detector import Detector
+
+
+def _reencode_to_h264(src: str, dst: str) -> None:
+    ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+    cmd = [
+        ffmpeg, "-y", "-i", src,
+        "-c:v", "libx264", "-preset", "fast", "-crf", "23",
+        "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart",
+        "-an",
+        dst,
+    ]
+    subprocess.run(cmd, check=True, capture_output=True)
 
 
 def process_video(
@@ -27,8 +44,10 @@ def process_video(
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 0
 
+    raw_fd, raw_path = tempfile.mkstemp(suffix=".mp4", prefix="robogate_raw_")
+    os.close(raw_fd)
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+    writer = cv2.VideoWriter(raw_path, fourcc, fps, (width, height))
 
     last_detections: list[dict] = []
     total_detections = 0
@@ -58,10 +77,21 @@ def process_video(
 
             frame_idx += 1
             if progress_callback and total_frames > 0:
-                progress_callback(min(frame_idx / total_frames, 1.0))
+                # Reserve the final 5% of the progress bar for the H.264 re-encode step.
+                progress_callback(min(frame_idx / total_frames, 1.0) * 0.95)
     finally:
         cap.release()
         writer.release()
+
+    try:
+        _reencode_to_h264(raw_path, output_path)
+    finally:
+        try:
+            os.remove(raw_path)
+        except OSError:
+            pass
+    if progress_callback:
+        progress_callback(1.0)
 
     avg_conf = (confidence_sum / total_detections) if total_detections else 0.0
 
