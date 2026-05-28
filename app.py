@@ -65,6 +65,15 @@ def pick_random_asset(directory: Path, extensions: set[str]) -> Path | None:
     return random.choice(files)
 
 
+def list_assets(directory: Path, extensions: set[str]) -> list[Path]:
+    if not directory.exists():
+        return []
+    return sorted(
+        (p for p in directory.iterdir() if p.suffix.lower() in extensions),
+        key=lambda p: p.name,
+    )
+
+
 def run_photo_tab(detector: Detector) -> None:
     st.subheader("フォト検知")
     col_upload, col_sample = st.columns([3, 1])
@@ -117,34 +126,40 @@ def run_photo_tab(detector: Detector) -> None:
 
 def run_video_tab(detector: Detector, frame_skip: int) -> None:
     st.subheader("ビデオ検知")
-    col_upload, col_sample = st.columns([3, 1])
-    with col_upload:
+
+    # サーバー上に保存済みのサンプル動画から選ぶ。
+    # ファイルはすでにサーバーにあるため、アップロード（転送待ち）が発生しない。
+    sample_videos = list_assets(config.VIDEOS_DIR, {".mp4", ".mov"})
+
+    source_path: Path | None = None
+    if sample_videos:
+        selected = st.selectbox(
+            "サンプル動画を選択（サーバー保存済み・アップロード不要）",
+            options=[p.name for p in sample_videos],
+            index=0,
+            key="video_sample_select",
+        )
+        source_path = next(p for p in sample_videos if p.name == selected)
+        st.caption(f"サンプル: {selected}")
+    else:
+        st.warning("assets/videos/ にサンプル動画がありません。")
+
+    # 任意: 自分の動画を使う場合のフォールバック（こちらはアップロードが発生します）。
+    with st.expander("自分の動画をアップロードする（任意）", expanded=False):
         uploaded = st.file_uploader(
             "動画をアップロード", type=["mp4", "mov"], key="video_upload"
         )
-    with col_sample:
-        st.write("")
-        st.write("")
-        sample_clicked = st.button(
-            "サンプル動画で試す", use_container_width=True, key="video_sample"
-        )
-
-    source_path: Path | None = None
-    if uploaded is not None:
-        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=Path(uploaded.name).suffix)
-        tmp.write(uploaded.read())
-        tmp.close()
-        source_path = Path(tmp.name)
-    elif sample_clicked:
-        sample = pick_random_asset(config.VIDEOS_DIR, {".mp4", ".mov"})
-        if sample is None:
-            st.warning("assets/videos/ にサンプル動画がありません。")
-        else:
-            source_path = sample
-            st.caption(f"サンプル: {sample.name}")
+        if uploaded is not None:
+            tmp = tempfile.NamedTemporaryFile(
+                delete=False, suffix=Path(uploaded.name).suffix
+            )
+            tmp.write(uploaded.read())
+            tmp.close()
+            source_path = Path(tmp.name)
+            st.caption(f"アップロード: {uploaded.name}")
 
     if source_path is None:
-        st.info("動画をアップロードするか、サンプル動画ボタンを押してください。")
+        st.info("サンプル動画を選択するか、動画をアップロードしてください。")
         return
 
     if st.button("解析開始", type="primary", key="video_run"):

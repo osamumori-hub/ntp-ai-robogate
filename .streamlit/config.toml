@@ -1,0 +1,4 @@
+[client]
+# Hide the Deploy button and the 3-dot developer menu in the top-right corner.
+# "minimal" = hide everything; "viewer" = hide dev tools only.
+toolbarMode = "minimal"
