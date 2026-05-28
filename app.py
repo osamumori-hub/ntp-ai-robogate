@@ -134,7 +134,7 @@ def run_video_tab(detector: Detector, frame_skip: int) -> None:
     source_path: Path | None = None
     if sample_videos:
         selected = st.selectbox(
-            "サンプル動画を選択（サーバー保存済み・アップロード不要）",
+            "サンプル動画を選択",
             options=[p.name for p in sample_videos],
             index=0,
             key="video_sample_select",
